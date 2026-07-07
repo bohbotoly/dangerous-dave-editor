@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dangerous Dave Level Editor</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header id="toolbar">
+    <div class="toolbar-row">
+      <h1>Dangerous Dave Editor</h1>
+      <div id="file-controls">
+        <label class="file-btn">
+          Load DAVE.EXE
+          <input type="file" id="exe-input" accept=".exe,.EXE" hidden>
+        </label>
+        <label class="file-btn">
+          Load EGADAVE.DAV
+          <input type="file" id="dav-input" accept=".dav,.DAV" hidden>
+        </label>
+        <span id="load-status"></span>
+      </div>
+      <div id="save-controls">
+        <button id="btn-save-exe" disabled>Download Modified EXE</button>
+        <button id="btn-save-dav" disabled>Download Modified DAV</button>
+        <button id="btn-export-json" disabled>Export Level Set</button>
+        <label class="file-btn" id="import-label" style="display:none">
+          Import Level Set
+          <input type="file" id="json-input" accept=".json" hidden>
+        </label>
+      </div>
+    </div>
+    <nav id="tabs">
+      <button class="tab active" data-tab="levels">Level Editor</button>
+      <button class="tab" data-tab="title">Title Screen</button>
+      <button class="tab" data-tab="sprites">Sprites</button>
+      <button class="tab" data-tab="menu">Menu Editor</button>
+    </nav>
+  </header>
+
+  <!-- Level Editor Tab -->
+  <main id="editor-area" class="tab-content active" data-tab="levels">
+    <aside id="tile-palette">
+      <h3>Tiles</h3>
+      <div id="palette-grid"></div>
+    </aside>
+    <section id="editor-main">
+      <div id="level-toolbar">
+        <div id="level-selector"></div>
+        <div id="tool-buttons">
+          <button class="tool-btn active" data-tool="paint" title="Paint (P)">Paint</button>
+          <button class="tool-btn" data-tool="erase" title="Erase (E)">Erase</button>
+          <button class="tool-btn" data-tool="fill" title="Fill (F)">Fill</button>
+          <button class="tool-btn" data-tool="player" title="Player Start (S)">Player</button>
+          <button class="tool-btn" data-tool="monster" title="Monster (M)">Monster</button>
+        </div>
+        <div id="edit-actions">
+          <button id="btn-undo" title="Undo (Ctrl+Z)">Undo</button>
+          <button id="btn-redo" title="Redo (Ctrl+Y)">Redo</button>
+          <label><input type="checkbox" id="show-grid" checked> Grid</label>
+          <label><input type="checkbox" id="show-viewport"> Viewport</label>
+        </div>
+      </div>
+      <div id="canvas-container">
+        <canvas id="level-canvas"></canvas>
+      </div>
+      <div id="minimap-container">
+        <canvas id="minimap-canvas"></canvas>
+        <div id="minimap-viewport"></div>
+      </div>
+    </section>
+    <aside id="properties-panel">
+      <div id="tile-info">
+        <h3>Selected Tile</h3>
+        <div id="selected-tile-preview"></div>
+        <div id="selected-tile-name"></div>
+        <div id="selected-tile-props"></div>
+      </div>
+      <div id="cursor-info">
+        <h3>Cursor</h3>
+        <div id="cursor-pos"></div>
+        <div id="cursor-tile"></div>
+      </div>
+      <div id="player-panel" style="display:none">
+        <h3>Player Start</h3>
+        <div>
+          <label>X: <input type="number" id="player-x" min="0" max="1584" step="1"></label>
+          <label>Y: <input type="number" id="player-y" min="0" max="144" step="1"></label>
+        </div>
+        <div>
+          <label>Motion:
+            <select id="player-motion">
+              <option value="36">Stationary (0x24)</option>
+              <option value="40">Falling (0x28)</option>
+            </select>
+          </label>
+        </div>
+      </div>
+      <div id="monster-panel" style="display:none">
+        <h3>Monsters</h3>
+        <div id="monster-warning" class="monster-warning" style="display:none">
+          Levels 1-2: Spider monsters with auto-generated patrol path.<br>
+          EXE code is patched on save to enable this.
+        </div>
+        <div id="monster-slots"></div>
+      </div>
+    </aside>
+  </main>
+
+  <!-- Title Screen Tab -->
+  <main id="title-editor" class="tab-content" data-tab="title">
+    <section id="title-canvas-area">
+      <h3>Title Screen (10x7 tiles)</h3>
+      <canvas id="title-canvas"></canvas>
+      <section id="title-logo-section">
+        <h3>Title Logo Sprites</h3>
+        <p class="hint">Flaming "Dangerous Dave" logo sprites from EGADAVE.DAV. Click pixels to paint with selected color.</p>
+        <div style="margin-bottom:8px">
+          <label style="font-size:11px">Zoom: <input type="range" id="logo-zoom" min="2" max="6" value="3"></label>
+        </div>
+        <div id="logo-sprites-container" style="display:flex;flex-direction:column;gap:16px"></div>
+      </section>
+    </section>
+    <aside id="title-palette">
+      <h3>Tiles</h3>
+      <div id="title-palette-grid"></div>
+    </aside>
+  </main>
+
+  <!-- Sprite Editor Tab -->
+  <main id="sprite-editor" class="tab-content" data-tab="sprites">
+    <section id="sprite-editor-section">
+      <h3>Game Sprites</h3>
+      <p class="hint">Edit Dave, monster, and projectile sprites. Changes affect both EGA (DAV) and VGA (EXE) data. Click pixels to paint.</p>
+      <div style="margin-bottom:8px">
+        <label style="font-size:11px">Zoom: <input type="range" id="sprite-zoom" min="2" max="8" value="4"></label>
+      </div>
+      <div id="sprite-cards-container" style="display:flex;flex-direction:column;gap:8px"></div>
+    </section>
+  </main>
+
+  <!-- Menu Editor Tab -->
+  <main id="menu-editor" class="tab-content" data-tab="menu">
+    <section id="menu-text-section">
+      <h3>Menu Text</h3>
+      <p class="hint">These text strings appear in the game menu/title screen.</p>
+      <div class="menu-field">
+        <label>Game Title (14 chars max):</label>
+        <input type="text" id="menu-title" maxlength="14" placeholder="DANGEROUS DAVE">
+      </div>
+      <div class="menu-field">
+        <label>Subtitle (23 chars max):</label>
+        <input type="text" id="menu-subtitle" maxlength="23" placeholder="IN COPYRIGHT INFRINGEMENT">
+      </div>
+    </section>
+    <section id="menu-graphics-section">
+      <h3>Menu Graphics (EGA)</h3>
+      <p class="hint">Config screen icons from the EXE (32x24 EGA, 4-plane). Click pixels to paint with selected color.</p>
+      <div id="menu-gfx-toolbar">
+        <div id="ega-color-picker"></div>
+        <label>Zoom: <input type="range" id="menu-zoom" min="2" max="8" value="4"></label>
+      </div>
+      <div id="menu-gfx-container" style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
+      </div>
+    </section>
+  </main>
+
+  <footer id="status-bar">
+    <span id="status-text">Load DAVE.EXE and EGADAVE.DAV to begin editing</span>
+  </footer>
+
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

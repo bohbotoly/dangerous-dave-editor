@@ -1,0 +1,10 @@
+# Original game files — never commit copyrighted game data
+*.EXE
+*.exe
+*.DAV
+*.dav
+
+# OS / editor noise
+Thumbs.db
+.DS_Store
+node_modules/

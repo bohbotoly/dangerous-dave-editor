@@ -4,6 +4,8 @@ A browser-based level, sprite, and graphics editor for the classic DOS game **Da
 
 Everything runs client-side in vanilla JavaScript (ES modules) — no build step, no dependencies, and your game files never leave the browser.
 
+![Dangerous Dave Editor — level editor with tile palette, minimap, and properties panel](docs/screenshot.png)
+
 ## Features
 
 ### Level Editor
